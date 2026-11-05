@@ -2,8 +2,8 @@
 ## pynq_z2.xdc : pin constraints for the Low-Frequency Signal Processor
 ## =============================================================================
 ##
-## VERIFY EVERY PIN against the official PYNQ-Z2 master XDC
-## (PYNQ-Z2 board files / "PYNQ-Z2 v1.0.xdc") before generating a bitstream.
+## Pins checked against the official TUL master XDC "PYNQ-Z2 v1.0.xdc"
+## (2026-11-03): A0 = AD1 (VAUX1) on E17/D18, Pmod JA, LED0, SW0/SW1 all match.
 ##
 ## The port names on the right (get_ports {...}) must match the EXTERNAL port
 ## names of your block design wrapper. The README tells you which name to give

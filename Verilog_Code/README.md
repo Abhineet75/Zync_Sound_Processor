@@ -331,7 +331,7 @@ Address Editor → *Assign All* → Validate Design (F6) → Create HDL Wrapper 
 
 ---
 
-## 6. Pins (PYNQ-Z2) — verify before wiring
+## 6. Pins (PYNQ-Z2) — checked against the official master XDC
 
 | Signal | Board location | FPGA pin |
 |---|---|---|
@@ -344,7 +344,7 @@ Address Editor → *Assign All* → Validate Design (F6) → Create HDL Wrapper 
 | `dbg_pins[3]` | LED0 | R14 |
 | `sw[1:0]` | SW1, SW0 | M19, M20 |
 
-These come from the PYNQ-Z1/Z2 master XDC as I know it. **Check each one against the PYNQ-Z2 board files / master XDC on Day 1** (that is an open question in the plan anyway). Pmod pins 5/11 are GND and 6/12 are 3.3 V, so use GND for the scope ground.
+All of these match TUL's master XDC (`PYNQ-Z2 v1.0.xdc`, from https://dpoauwgwqsy2x.cloudfront.net/Download/pynq-z2_v1.0.xdc.zip), checked 2026-11-03. Pmod pins 5/11 are GND and 6/12 are 3.3 V, so use GND for the scope ground.
 
 ---
 

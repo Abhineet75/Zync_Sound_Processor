@@ -64,9 +64,23 @@ CPU utilization at `-O2`: Q15 190 µs / 545 ms = **0.035 %**; float **0.05 %**. 
 
 Why the order flips: the Q15 Goertzel needs a 32 × 32 → 64-bit multiply per sample. Unoptimised, each 64-bit operation becomes many instructions with memory round trips; at `-O2` it is a single `SMULL` with the filter state in registers, which beats the dependent multiply–add chain on the Cortex-A9's VFP. Fixed point is not automatically faster on a CPU with an FPU; its real advantage is on FPU-less microcontrollers and in FPGA fabric — and Q15 reaches the same accuracy (≤ 0.05 dB) with integer hardware only.
 
+## 5. Cache-coherency bug demo (`USE_CACHE_INVALIDATE 0`, `-O2`, self-test)
+
+With the `Xil_DCacheInvalidateRange` call removed, the self-test drops from 8 / 8 to **3 / 8** and the output freezes:
+
+| Blocks | Rumble / mains (‰) | RMS | Verdict |
+|---|---|---|---|
+| 1 (buffer 0, first read) | 984 / 0 | 18817 | correct, matches the working build |
+| 2 (buffer 1, first read) | 896 / 2 | 19798 | already wrong (working build: 985 / 0, 18934) |
+| 3 onwards, every step | alternates **exactly** between the two rows above | | RUMBLE, regardless of input |
+
+- After the first read of each buffer, every later read hits the ARM's data cache, so the CPU keeps analysing the same two 20 Hz blocks while the DMA keeps writing fresh data to DDR. Silence, 50 Hz, 100 Hz and 45 Hz are all reported as RUMBLE; the 10 Hz and 35 Hz "passes" are coincidences (the frozen data is also in the rumble band), and their 1-block "latency" is meaningless.
+- Block 2 is a stale/fresh mixture: while buffer 0 was read, the Cortex-A9 data prefetcher pulled in the start of the adjacent buffer 1 while the DMA was still filling it.
+- Overruns, DMA errors and hardware drops all stay at 0: the data path delivers correct data to DDR, only the CPU's view of memory is stale, so no hardware counter can flag this bug.
+- Processing time 186 µs vs 189 µs with invalidation: the cache maintenance costs ≈ 3 µs per block.
+
 ## Still to capture
 
 - Busy-pin scope captures (JA2) for Q15 and float at `-O2`, probe ground on the Arduino GND
-- Cache-bug build (`USE_CACHE_INVALIDATE 0`) output
 - Vivado utilization report screenshot
 - Full terminal logs as text files

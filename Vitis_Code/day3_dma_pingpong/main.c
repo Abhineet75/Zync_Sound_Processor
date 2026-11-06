@@ -220,7 +220,7 @@ int main(void)
     }
     XScuGic_Enable(&gic, DMA_IRQ_ID);
     Xil_ExceptionEnable();
-    XAxiDma_IntrEnable(&dma, XAXIDMA_IRQ_IOC_MASK | XAXIDMA_IRQ_ERROR_MASK,
+    XAxiDma_IntrEnable(&dma, (XAXIDMA_IRQ_IOC_MASK | XAXIDMA_IRQ_ERROR_MASK),
                        XAXIDMA_DEVICE_TO_DMA);
 
     // ---- Start: clean cache lines, choose source, arm DMA, THEN enable ---------

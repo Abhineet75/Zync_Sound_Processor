@@ -1,0 +1,41 @@
+clip             version    max rumble  RUMBLE    rms  verdicts (one per 0.545 s block)
+elp_104250_30s   raw              450‰       0    154  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_104250_30s   raw+hp20         354‰       0    146  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_104330_20s   raw              393‰       0    156  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_104330_20s   raw+hp20         309‰       0    150  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_105105_30s   raw              583‰       0    200  qqqqqqqqqqqqqqqqqqq....qq.............qqqqqqqqqqqqqqqqq
+elp_105105_30s   raw+hp20         515‰       0    193  qqqqqqqqqqqqqqqqqqq....qq.........qq..qqqqqqqqqqqqqqqqq
+elp_103000_20s   raw              186‰       0     92  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_103000_20s   raw+hp20         125‰       0     89  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_020000_20s   raw              129‰       0     34  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_020000_20s   raw+hp20          92‰       0     33  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_180000_20s   raw              151‰       0    341  qq..................................
+elp_180000_20s   raw+hp20         100‰       0    329  qq..................................
+
+elp_104250_30s   rc68             732‰       6    201  qqqqqqqqqqqqqRRRqqqqqqqqqqqqRRRqqqqqqqqqqqqqqqqqqqqqqqq
+elp_104250_30s   rc68+hp20        659‰       2    168  qqqqqqqqqqqqqRRqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_104330_20s   rc68             767‰       8    187  qqqqqqqqqqqqqqqqRRRRRRRRqqqqqqqqqqqq
+elp_104330_20s   rc68+hp20        669‰       0    163  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_105105_30s   rc68             736‰      10    264  qqqqqqqqqqqqqqRRqqqRRRRR...........RRRqqqqqqqqqqqqqqqqq
+elp_105105_30s   rc68+hp20        684‰       0    228  qqqqqqqqqqqqqqqqqqq...................qqqqqqqqqqqqqqqqq
+elp_103000_20s   rc68             523‰       0    104  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_103000_20s   rc68+hp20        409‰       0     92  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_020000_20s   rc68             474‰       0     38  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_020000_20s   rc68+hp20        389‰       0     34  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_180000_20s   rc68             449‰       0    414  qq..................................
+elp_180000_20s   rc68+hp20        343‰       0    372  qq..................................
+
+elp_104250_30s   lp60             850‰      12    211  qqqqqqqqqqqqqRRRqqRRRRqqqqRRRRRqqqqqqqqqqqqqqqqqqqqqqqq
+elp_104250_30s   lp60+hp20        790‰       6    164  qqqqqqqqqqqqqRRRqqqqqqqqqqqqRRRqqqqqqqqqqqqqqqqqqqqqqqq
+elp_104330_20s   lp60             912‰      10    182  qqqqqqqqqqqqqqqqRRRRRRRRRRqqqqqqqqqq
+elp_104330_20s   lp60+hp20        883‰       8    146  qqqqqqqqqqqqqqqqRRRRRRRRqqqqqqqqqqqq
+elp_105105_30s   lp60             820‰      26    279  qqqqqqqqqqqqqRRRRRRRRRRRRRRR..RRRRRRRRRRRqqqqqqqqqqqqqq
+elp_105105_30s   lp60+hp20        774‰      17    229  qqqqqqqqqqqqqqqqqqqRRRRRRRRR..RRRRRRRRqqqqqqqqqqqqqqqqq
+elp_103000_20s   lp60             740‰       0     98  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_103000_20s   lp60+hp20        680‰       0     80  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_020000_20s   lp60             762‰       0     37  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_020000_20s   lp60+hp20        724‰       0     30  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+elp_180000_20s   lp60             739‰      18    389  qqqRRRRRRRRRR...RR..RRR..........RRR
+elp_180000_20s   lp60+hp20        678‰       2    321  qqqq.................RR....qqqq.....
+
+legend: R = RUMBLE, M = MAINS HUM, . = nothing, q = quiet; rms = median block RMS (board threshold 300)

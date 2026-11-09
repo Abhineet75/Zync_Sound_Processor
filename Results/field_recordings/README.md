@@ -18,7 +18,7 @@ The 9–41 Hz band is only 32 of 460 Hz, so broadband noise alone gives ≈ 7–
 
 ## 2. Finding candidate events
 
-`find_rumbles.py` + an energy detector: rumble-band power ≥ 6 dB above its 10-minute background **and** ≥ 6 dB above the change in a 60–200 Hz reference band (rejects broadband impulses), for ≥ 2 blocks → 28 events. Whitened spectrograms were inspected by eye; most are short broadband impulses. The strongest tonal candidates are around **10:42:55–10:43:10** and **10:43:44–10:43:50** (≈ 22–35 Hz with harmonics, several seconds — rumble-like) and **10:51:10–10:51:30** (strong, broader; rumble chorus or vehicle). Species is **not** confirmed; listen at 8× speed (20 Hz → 160 Hz) to check.
+`find_rumbles.py` + an energy detector: rumble-band power ≥ 6 dB above its 10-minute background **and** ≥ 6 dB above the change in a 60–200 Hz reference band (rejects broadband impulses), for ≥ 2 blocks → 29 events ([`rumble_candidates.csv`](rumble_candidates.csv)). Whitened spectrograms were inspected by eye; most are short broadband impulses. The strongest tonal candidates are around **10:42:55–10:43:10** and **10:43:44–10:43:50** (≈ 22–35 Hz with harmonics, several seconds — rumble-like) and **10:51:10–10:51:30** (strong, broader; rumble chorus or vehicle). Species is **not** confirmed; listen at 8× speed (20 Hz → 160 Hz) to check.
 
 ## 3. What the unchanged board would report
 

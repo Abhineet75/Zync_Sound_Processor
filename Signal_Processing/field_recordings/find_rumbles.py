@@ -9,11 +9,15 @@ analysed with an FFT restricted to what the board would see after decimation:
     rumble share = sum |X_k|^2 over 9-41 Hz   / sum |X_k|^2 over 1 Hz .. 469 Hz
     mains share  = sum |X_k|^2 over 47-52 Hz  / same total
 
-(no window, DC removed, as on the board). A candidate event is a run of at
-least DSP_HOLD_BLOCKS consecutive blocks with rumble share >= DSP_RUMBLE_PM
-whose rumble-band power is at least SNR_DB above the local background (median
-over the surrounding 10 minutes). The recording is not calibrated, so the
-board's absolute minimum-RMS rule is replaced by this relative one.
+(no window, DC removed, as on the board). It first reports how often a block
+satisfies the board's own rule (share >= DSP_RUMBLE_PM). In forest recordings
+that is almost never, because the background is broadband (see the results
+README), so candidate events are found with an energy detector instead:
+
+    a run of at least DSP_HOLD_BLOCKS blocks whose rumble-band power is at
+    least SNR_DB above its local background (median over 10 minutes), and
+    whose rise is at least CONTRAST_DB larger than the rise of a 60-200 Hz
+    reference band (rejects broadband impulses such as knocks and rain).
 
 Candidates still need a human check (spectrogram / listening): wind, thunder,
 vehicles and aircraft also put energy below 41 Hz.
@@ -37,7 +41,9 @@ import lfsp_reference as L  # noqa: E402  (band edges and thresholds from lfsp_d
 
 BLOCK = 4096                 # samples per block at 8 kHz (0.512 s)
 BOARD_NYQUIST_HZ = L.FS / 2  # 469.5 Hz: the board cannot see above this
-SNR_DB = 10.0                # event must stand this far above the local background
+SNR_DB = 6.0                 # rumble band this far above its local background
+CONTRAST_DB = 6.0            # ... and this much more than the 60-200 Hz reference band
+REF_BAND_HZ = (60.0, 200.0)
 BACKGROUND_S = 600           # window for the background median
 
 
@@ -72,14 +78,15 @@ def band_bins(rate):
     return (slice(k(L.C["DSP_RUMBLE_LO_HZ"], True), k(L.C["DSP_RUMBLE_HI_HZ"], False) + 1),
             slice(k(L.C["DSP_MAINS_LO_HZ"], True), k(L.C["DSP_MAINS_HI_HZ"], False) + 1),
             slice(1, k(BOARD_NYQUIST_HZ, False) + 1),
+            slice(k(REF_BAND_HZ[0], True), k(REF_BAND_HZ[1], False) + 1),
             df)
 
 
 def analyse(data, rate, chunk_blocks=4096):
     """Per-block rumble power, total power (to 469 Hz), shares and peak frequency."""
-    rumble_b, mains_b, total_b, df = band_bins(rate)
+    rumble_b, mains_b, total_b, ref_b, df = band_bins(rate)
     nblk = len(data) // BLOCK
-    out = {k: np.empty(nblk) for k in ("p_rumble", "p_total", "rumble_pm", "mains_pm", "peak_hz")}
+    out = {k: np.empty(nblk) for k in ("p_rumble", "p_ref", "p_total", "rumble_pm", "mains_pm", "peak_hz")}
     for start in range(0, nblk, chunk_blocks):
         stop = min(nblk, start + chunk_blocks)
         x = np.asarray(data[start * BLOCK:stop * BLOCK], dtype=np.float64).reshape(-1, BLOCK)
@@ -88,6 +95,7 @@ def analyse(data, rate, chunk_blocks=4096):
         pr, pm, pt = p[:, rumble_b].sum(1), p[:, mains_b].sum(1), p[:, total_b].sum(1)
         pt = np.maximum(pt, 1e-12)
         out["p_rumble"][start:stop] = pr
+        out["p_ref"][start:stop] = p[:, ref_b].sum(1)
         out["p_total"][start:stop] = pt
         out["rumble_pm"][start:stop] = 1000 * pr / pt
         out["mains_pm"][start:stop] = 1000 * pm / pt
@@ -108,9 +116,10 @@ def local_background(p, rate):
 
 def find_events(a, rate):
     hold = int(L.C["DSP_HOLD_BLOCKS"])
-    bg = local_background(a["p_rumble"], rate)
-    snr = 10 * np.log10(np.maximum(a["p_rumble"], 1e-12) / np.maximum(bg, 1e-12))
-    hit = (a["rumble_pm"] >= L.C["DSP_RUMBLE_PM"]) & (snr >= SNR_DB)
+    rise = lambda p: 10 * np.log10(np.maximum(p, 1e-12) / np.maximum(local_background(p, rate), 1e-12))
+    snr = rise(a["p_rumble"])
+    contrast = snr - rise(a["p_ref"])
+    hit = (snr >= SNR_DB) & (contrast >= CONTRAST_DB)
     events, i = [], 0
     while i < len(hit):
         if hit[i]:
@@ -122,6 +131,7 @@ def find_events(a, rate):
                 events.append(dict(
                     start_s=i * BLOCK / rate, dur_s=(j - i) * BLOCK / rate, blocks=j - i,
                     peak_snr_db=float(snr[sl].max()),
+                    mean_contrast_db=float(contrast[sl].mean()),
                     mean_rumble_pm=float(a["rumble_pm"][sl].mean()),
                     mean_mains_pm=float(a["mains_pm"][sl].mean()),
                     peak_hz=float(np.median(a["peak_hz"][sl]))))
@@ -146,23 +156,26 @@ def main():
     print(f"{args.wav}: {len(data)} samples at {rate} Hz = {len(data) / rate / 3600:.2f} h", file=sys.stderr)
     a = analyse(data, rate)
     events, _ = find_events(a, rate)
-    events.sort(key=lambda e: (e["peak_snr_db"] * min(e["dur_s"], 5.0)), reverse=True)
+    events.sort(key=lambda e: (e["peak_snr_db"] * min(e["dur_s"], 4.0)), reverse=True)
 
     with open(args.out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=["rank", "start_hms", "start_s", "dur_s", "blocks", "peak_snr_db",
-                                          "mean_rumble_pm", "mean_mains_pm", "peak_hz"])
+                                          "mean_contrast_db", "mean_rumble_pm", "mean_mains_pm", "peak_hz"])
         w.writeheader()
         for r, e in enumerate(events, 1):
             w.writerow(dict(rank=r, start_hms=hms(e["start_s"]), **{k: round(v, 2) if isinstance(v, float) else v
                                                                      for k, v in e.items()}))
 
     blocks = len(a["rumble_pm"])
-    print(f"blocks analysed: {blocks}; blocks with rumble share >= {L.C['DSP_RUMBLE_PM']:.0f}: "
-          f"{int(np.sum(a['rumble_pm'] >= L.C['DSP_RUMBLE_PM']))}; events: {len(events)} -> {args.out}")
-    print(f"{'rank':>4} {'start':>8} {'dur':>6} {'SNR':>6} {'rumble':>7} {'mains':>6} {'peak':>6}")
-    for r, e in enumerate(events[:25], 1):
-        print(f"{r:4d} {hms(e['start_s']):>8} {e['dur_s']:5.1f}s {e['peak_snr_db']:5.1f}dB "
-              f"{e['mean_rumble_pm']:6.0f}‰ {e['mean_mains_pm']:5.0f}‰ {e['peak_hz']:5.1f}Hz")
+    r = a["rumble_pm"]
+    print(f"blocks analysed: {blocks}; rumble share median {np.median(r):.0f}‰, 99.9th pct "
+          f"{np.percentile(r, 99.9):.0f}‰; blocks meeting the board's {L.C['DSP_RUMBLE_PM']:.0f}‰ rule: "
+          f"{int(np.sum(r >= L.C['DSP_RUMBLE_PM']))}")
+    print(f"energy-detector events: {len(events)} -> {args.out}")
+    print(f"{'rank':>4} {'start':>8} {'dur':>6} {'SNR':>6} {'contr':>6} {'share':>6} {'peak':>6}")
+    for n, e in enumerate(events[:25], 1):
+        print(f"{n:4d} {hms(e['start_s']):>8} {e['dur_s']:5.1f}s {e['peak_snr_db']:5.1f}dB "
+              f"{e['mean_contrast_db']:5.1f}dB {e['mean_rumble_pm']:5.0f}‰ {e['peak_hz']:5.1f}Hz")
 
 
 if __name__ == "__main__":
